@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "chat"
+version = "0.1.0"
+description = ""
+authors = ["minkj1992 <minkj1992@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+langchain = "^0.0.285"
+jinja2 = "^3.1.2"
+websockets = "^11.0.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
