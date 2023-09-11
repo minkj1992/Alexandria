@@ -9,14 +9,14 @@ from starlette.exceptions import HTTPException
 from src.app.handlers import (create_start_app_handler,
                               create_stop_app_handler, http422_error_handler,
                               http_error_handler)
-from src.app.http import greet
+from src.app.http import greet, rooms
 from src.app.wss.chat import chat_server
 from src.config import get_settings
 
 
-def get_application() -> FastAPI:
+def get_application(app_title: str = 'ChatServer') -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title='ChatServer')
+    app = FastAPI(title=app_title)
 
     app.add_middleware(
         CORSMiddleware,
@@ -30,6 +30,8 @@ def get_application() -> FastAPI:
 
     routers = [
         greet.router,
+        rooms.router,
+        
     ]
     for router in routers:
         app.include_router(router)

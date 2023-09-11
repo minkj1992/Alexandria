@@ -11,7 +11,8 @@ from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from src.config import Settings
-from src.infra.redis import close_redis_connection, connect_to_redis
+from src.infra.redis.connection import (close_redis_connection,
+                                        connect_to_redis, set_conn_to_models)
 
 
 def create_start_app_handler(
@@ -20,6 +21,8 @@ def create_start_app_handler(
 ) -> Callable:  # type: ignore
     async def start_app() -> None:
         await connect_to_redis(app, settings)
+        set_conn_to_models(app.state.redis)
+        
 
     return start_app
 
