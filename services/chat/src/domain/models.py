@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, validator
 
-from infra.redis.models import Book
+from src.infra.redis.models import Book
 
 
 class ChatResponse(BaseModel):

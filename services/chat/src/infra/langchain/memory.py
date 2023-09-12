@@ -1,7 +1,7 @@
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import RedisChatMessageHistory
 
-from config import get_settings
+from src.config import get_settings
 
 redis_url = get_settings().redis_url
 

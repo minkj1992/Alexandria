@@ -5,9 +5,9 @@ from langchain.tools import BaseTool
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStore
 
-from services.book_service import get_a_book_vector
 from src.config import get_settings
 from src.domain.models import RoomDto
+from src.services.book_service import get_a_book_vector
 
 serper_api_key = get_settings().serper_api_key
 search = GoogleSerperAPIWrapper(serper_api_key=serper_api_key)

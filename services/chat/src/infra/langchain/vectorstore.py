@@ -7,8 +7,8 @@ from langchain.vectorstores.base import VectorStore
 from langchain.vectorstores.redis import Redis as LangchainRedis
 from loguru import logger
 
-from infra.langchain.embeddings import get_embeddings
 from src.config import get_settings
+from src.infra.langchain.embeddings import get_embeddings
 
 redis_url = get_settings().redis_url
 

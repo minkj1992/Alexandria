@@ -5,8 +5,8 @@ import redis.asyncio as redis
 from aredis_om.model import NotFoundError
 from loguru import logger
 
-from domain.models import RoomDto
 from src.app.exceptions import BookNotFoundException, RoomNotFoundException
+from src.domain.models import RoomDto
 from src.infra.redis.models import Book, Room
 from src.services import book_service
 
@@ -30,7 +30,7 @@ async def get_a_room_dto(
 ) -> RoomDto:
     try:
         room = await Room.get(pk=room_pk)
-    except NotFoundError as e:
+    except NotFoundError:
         raise RoomNotFoundException(room_pk=room_pk)
 
     try:
@@ -38,7 +38,7 @@ async def get_a_room_dto(
             *[book_service.get_a_book(pk) for pk in room.books]
         )
 
-    except NotFoundError as e:
+    except NotFoundError:
         raise BookNotFoundException(" ".join(room.books))
 
     return RoomDto(
