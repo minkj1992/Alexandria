@@ -16,7 +16,7 @@ from src.infra.langchain.tools import get_tools
 
 
 def get_agent_executor(
-    prompt: str, session_id: str, callback_manager: AsyncCallbackManager
+    prompt: str, room_pk: str, callback_manager: AsyncCallbackManager
 ) -> AgentExecutor:
     llm = ChatOpenAI(
         model="gpt-3.5-turbo-16k",
@@ -30,11 +30,11 @@ def get_agent_executor(
         extra_prompt_messages=[MessagesPlaceholder(variable_name="memory")],
     )
 
-    tools = get_tools()
+    tools = get_tools(room_pk)
     agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
     return AgentExecutor(
         agent=agent,
         tools=tools,
-        memory=get_memory(session_id),
+        memory=get_memory(room_pk),
         verbose=True,
     )

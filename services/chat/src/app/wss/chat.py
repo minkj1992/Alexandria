@@ -52,9 +52,8 @@ class ChatRequest(BaseModel):
 async def chat(websocket: WebSocket, room_pk: str):
     room = await room_service.get_a_room(room_pk)
 
-    session_id: str = room_pk
     callback_manager = AsyncCallbackManager([StreamingLLMCallbackHandler(websocket)])
-    agent = get_agent_executor(room.prompt, session_id, callback_manager)
+    agent = get_agent_executor(room.prompt, room_pk, callback_manager)
 
     await websocket.accept()
     try:
