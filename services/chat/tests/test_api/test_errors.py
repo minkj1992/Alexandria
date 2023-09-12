@@ -14,9 +14,7 @@ async def test_wrong_path_error(app: FastAPI):
     assert response.status_code == HTTP_404_NOT_FOUND
 
     error_data = response.json()
-    logger.info(response)
     assert "errors" in error_data
-
 
 
 async def test_validation_error(app: FastAPI):

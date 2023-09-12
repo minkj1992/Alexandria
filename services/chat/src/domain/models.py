@@ -1,4 +1,9 @@
+from dataclasses import dataclass
+from typing import List
+
 from pydantic import BaseModel, validator
+
+from infra.redis.models import Book
 
 
 class ChatResponse(BaseModel):
@@ -19,3 +24,11 @@ class ChatResponse(BaseModel):
         if v not in ["start", "stream", "end", "error", "info"]:
             raise ValueError("type must be start, stream or end")
         return v
+
+
+@dataclass
+class RoomDto:
+    pk: str
+    name: str
+    prompt: str
+    books: List[Book]

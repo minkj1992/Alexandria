@@ -12,10 +12,10 @@ from starlette.websockets import WebSocketDisconnect, WebSocketState
 from websockets import ConnectionClosed
 
 from src.config import get_settings
-from src.domain.models import ChatResponse
+from src.domain.models import ChatResponse, RoomDto
 from src.infra.langchain.agent import get_agent_executor
 from src.infra.langchain.callbacks import StreamingLLMCallbackHandler
-from src.services import room_service
+from src.services import book_service, room_service
 
 chat_server = FastAPI()
 chat_server.add_middleware(
@@ -37,9 +37,9 @@ async def get(
         "chat.html",
         {
             "request": request,
-            "room_title": room.title,
+            "room_name": room.name,
             "base_url": settings.base_url,
-            "room_uuid": room_pk,
+            "room_pk": room_pk,
         },
     )
 
@@ -50,10 +50,10 @@ class ChatRequest(BaseModel):
 
 @chat_server.websocket("/{room_pk}")
 async def chat(websocket: WebSocket, room_pk: str):
-    room = await room_service.get_a_room(room_pk)
+    room_dto: RoomDto = await room_service.get_a_room_dto(room_pk)
 
     callback_manager = AsyncCallbackManager([StreamingLLMCallbackHandler(websocket)])
-    agent = get_agent_executor(room.prompt, room_pk, callback_manager)
+    agent = get_agent_executor(room_dto, callback_manager)
 
     await websocket.accept()
     try:
@@ -74,4 +74,4 @@ async def chat(websocket: WebSocket, room_pk: str):
             end_resp = ChatResponse(sender="Assistant", message="", type="end")
             await websocket.send_json(end_resp.dict())
     except (WebSocketDisconnect, ConnectionClosed):
-        await logger.info("websocket disconnect")
+        logger.info("websocket disconnect")

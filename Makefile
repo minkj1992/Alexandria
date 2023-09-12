@@ -1,10 +1,8 @@
 up:
 	@docker compose up --build -d --remove-orphans
-
-logs:
 	@docker compose logs -f
 
-down:
+down: 
 	@docker compose down
 
 .PHONY: test
