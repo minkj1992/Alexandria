@@ -1,11 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
+  <title>{{ room_title | safe }} chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6112497523452008"
+    crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-size: 14px;
+    }
+
+    .chat-body {
+      max-width: 400px;
+      margin: 50px auto;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .card-body {
+      background-color: #FFFFFF;
+      color: #444;
+      border-radius: 10px;
+    }
+
+    .chat-separator {
+      border-bottom: 1px solid #ccc;
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+
+    .server-message {
+      background-color: #f4f4f5;
+      padding: 10px;
+      margin: 20px;
+      border-radius: 10px;
+    }
+
+    .client-message {
+      background-color: #f4f4f5;
+      padding: 10px;
+      margin: 20px;
+      border-radius: 10px;
+      text-align: right;
+    }
+
+    .form-inline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .form-control {
+      flex: 1;
+      background-color: #f4f4f5;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      margin-right: 10px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    #send {
+      background-color: #4C4CFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+    }
+
+    #send:hover {
+      background-color: #3F3FFF;
+      cursor: pointer;
+    }
+
+    #send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
-<body>
-  
+
+<body class="bg-gray-100">
+  <div class="chat-body">
+    <div class="card-body p-5">
+      <h4 class="card-title text-center text-3xl font-semibold mb-2 text-gray-900">{{ room_title | safe }}</h4>
+      <p class="card-text text-center text-sm  text-gray-600 uppercase " id="header">Ask a
+        question</p>
+      <hr class="border-t border-gray-300 my-5">
+
+      <div id="messages" class="overflow-auto h-64 mb-4"></div>
+      <form action="" class="form-inline" id="chat-form" onsubmit="sendMessage(event)">
+        <input type="text" class="form-control" placeholder="Write your question" id="messageText">
+        <button id="send" type="submit" class="btn btn-primary disabled">Send</button>
+      </form>
+    </div>
+  </div>
 </body>
+
+
+<script>
+  const CHAT_TIMEOUT = 360000; // 4분, 600s(10분) is openai's max timeout
+  const room_uuid = "{{ room_uuid | safe }}";
+  const base_url = "{{ base_url | safe }}";
+  let activityTimeout;
+
+  const ws = new WebSocket(`ws://${base_url}/chat/${room_uuid}`);
+  function onCloseFunc() {
+    // 일정 시간 동안 메시지가 없는 경우 서버로 close 요청 보내기
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.close();
+    }
+  }
+
+  ws.onopen = function (event) {
+    // 요청을 보내기 전에 웹소켓 연결이 닫혔는지 확인합니다.
+    if (ws.readyState === WebSocket.CLOSED) {
+      ws.open();
+    }
+
+    activityTimeout = setTimeout(onCloseFunc, CHAT_TIMEOUT); // 활동이 없는 시간 (밀리초)
+  }
+
+  // Receive message from server word by word. Display the words as they are received.
+  ws.onmessage = function (event) {
+    // 활동 상태 업데이트
+    clearTimeout(activityTimeout);
+
+    let messages = document.getElementById('messages');
+    let data = JSON.parse(event.data);
+    if (data.sender === "Assistant") {
+      if (data.type === "start") {
+        let header = document.getElementById('header');
+        header.innerHTML = "Computing answer..."; // 채팅 시작 시 헤더를 "Computing answer..."로 변경
+        let div = document.createElement('div');
+        div.className = 'server-message';
+        let p = document.createElement('p');
+        p.innerHTML = "<strong>" + "Chatbot: " + "</strong>"; // "Chatbot: " 문구 추가
+        div.appendChild(p);
+        messages.appendChild(div);
+      } else if (data.type === "stream") {
+        changeChatHeader("Chatbot is typing...");
+        let p = messages.lastChild.lastChild;
+        if (data.message === "\n") {
+          p.innerHTML += "<br>";
+        } else {
+          p.innerHTML += data.message; // 새로운 단어를 기존 메시지에 추가
+        }
+      } else if (data.type === "info") {
+        changeChatHeader(data.message);
+      } else if (data.type === "end") {
+        changeChatHeader("Ask a question");
+        enableSendBtn();
+      } else if (data.type === "error") {
+        changeChatHeader("Ask a question");
+        enableSendBtn();
+        let p = messages.lastChild.lastChild;
+        p.innerHTML += data.message; // 에러 메시지를 기존 메시지에 추가
+      }
+    } else {
+      let div = document.createElement('div');
+      div.className = 'client-message';
+      let p = document.createElement('p');
+      p.innerHTML = "<strong>" + "You: " + "</strong>";  // "You: " 문구 추가
+      p.innerHTML += data.message; // 사용자 메시지 추가
+      div.appendChild(p);
+      messages.appendChild(div);
+    }
+    // Scroll to the bottom of the chat
+    messages.scrollTop = messages.scrollHeight;
+
+    console.log("set timeout is called")
+    activityTimeout = setTimeout(onCloseFunc, CHAT_TIMEOUT); // 활동이 없는 시간 (밀리초)
+  };
+
+  ws.onclose = function (event) {
+    disableSendBtn("Send");
+    changeChatHeader("🤖 말씀이 없으셔서 사용을 중단합니다.");
+    if (event.code === 1000) {
+      // 정상적으로 연결이 종료된 경우
+      console.log("WebSocket connection closed.");
+    } else {
+      // 활동 타임아웃 또는 다른 이유로 연결이 종료된 경우
+      console.log("WebSocket connection closed due to inactivity or other reasons.");
+    }
+  };
+
+  function disableSendBtn(btnMsg) {
+    let button = document.getElementById('send');
+    button.innerHTML = btnMsg;
+    button.className = "btn btn-primary disabled"
+    button.disabled = true;
+  }
+
+  function enableSendBtn() {
+    let button = document.getElementById('send');
+    button.innerHTML = "Send";
+    button.className = "btn btn-primary";
+    button.disabled = false;
+  }
+
+  function changeChatHeader(header_msg) {
+    let header = document.getElementById('header');
+    header.innerHTML = header_msg;
+  }
+
+  // Send message to server
+  function sendMessage(event) {
+    event.preventDefault();
+    let message = document.getElementById('messageText').value;
+    if (message === "") {
+      return;
+    }
+    ws.send(message);
+    document.getElementById('messageText').value = "";
+    // Turn the button into a loading button
+    disableSendBtn("Loading...");
+  }
+
+</script>
+
 </html>
