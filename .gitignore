@@ -1,4 +1,5 @@
 __pycache__/
 .env
 .pytest_cache/
-
+chat/models/bart-large-cnn/*
+chat/models/t5-small/*
