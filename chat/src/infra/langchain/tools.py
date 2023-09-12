@@ -24,6 +24,7 @@ def get_tools(room_dto: RoomDto):
             for book in room_dto.books
         ],
         *load_tools(["google-serper"]),
+        *(load_huggingface_tool(t) for t in ("summarization", "translation")),
     ]
 
 

@@ -5,44 +5,21 @@ services:
     container_name: chat
     restart: on-failure
     build:
-      context: ./services/chat
+      context: ./chat
       dockerfile: Dockerfile
     command: uvicorn src.main:app --host=0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     env_file:
-      - ./services/chat/.env       
+      - ./chat/.env       
     volumes:
-      - ./services/chat/src:/src/
+      - ./chat/src:/src/
+      - ./chat/models:/models/
     depends_on:
       - redis
     networks:
       - net          
 
-  categorizer:
-    container_name: categorizer
-    build:
-      context: ./services/categorizer
-      dockerfile: Dockerfile
-    volumes:
-      - ./services/categorizer/src:/src/
-    ports:
-      - "8001:8080"
-    networks:
-      - net      
-
-  summarizer:
-    container_name: summarizer
-    build:
-      context: ./services/summarizer
-      dockerfile: Dockerfile  
-    volumes:
-      - ./services/summarizer/src:/src/
-    ports:
-      - "8002:8080"
-    networks:
-      - net
-  
   redis-stack:
     image: redis/redis-stack:latest
     container_name: redis-stack

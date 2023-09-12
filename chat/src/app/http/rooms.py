@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, Field
 
+from src.domain.prompts import BASE_SYS_PROMPT
 from src.services import room_service
 
 router = APIRouter(prefix="/rooms", tags=["rooms"])
@@ -14,6 +15,7 @@ class CreateRoomRequest(BaseModel):
     books: List[str] = Field(title="Room에 포함시킬 book pk 리스트")
 
     prompt: str = Field(
+        default=BASE_SYS_PROMPT,
         title="Room Prompt",
     )
 
