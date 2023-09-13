@@ -14,7 +14,7 @@
 
 다음은 서비스 데모 영상입니다.
 
-- @link youtube
+- https://youtu.be/hrs-yMIUJBw
 
 
 ## 1. Requirements
