@@ -51,6 +51,8 @@
 
 
 ### 2-1. DB / Redis
+> [redis 구현체](https://github.com/minkj1992/Alexandria/tree/main/chat/src/infra/redis)
+
 Redis에 저장되고 있는 데이터는 총 5가지입니다.
 
 - `Vectorstore`, 1:1 = Book : Vectorstore
@@ -69,19 +71,20 @@ Redis에 저장되고 있는 데이터는 총 5가지입니다.
 
 `Room`은 채팅방을 위해 사용되며, 필요한 Book들을 aggregate할 수 있습니다. 또한 Agent의 system prompt를 저장합니다.
 
-@link memory
-@link redis
+
+
 
 ### 2-2. LLM / ML
 
-@link agent
+- [agent](https://github.com/minkj1992/Alexandria/blob/main/chat/src/infra/langchain/agent.py)
+
 유저의 입력에 따라, NLP task를 routing 시키기 위하여 openai function을 사용해서 라우팅하도록 [`OpenAIFunctionsAgent`](https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent)를 사용하였습니다.
 
-@link TranslationTool, SummarizationTool
+- [tool](https://github.com/minkj1992/Alexandria/blob/81357e1cd9a410cc7ef0fc1d613fea243074684d/chat/src/infra/langchain/tools.py#L59)
 이때 function의 parameter들로 [`Tool`](https://python.langchain.com/docs/modules/agents/tools/)들을 만들어 전달하였습니다. 이때 Huggingface의 모델들 또한 pipeline으로 만든 뒤, `BaseTool`로 구현하여 Tool로 전달해주었습니다.
 
 
-@link DynamicTool
+- [DynamicTool](https://github.com/minkj1992/Alexandria/blob/81357e1cd9a410cc7ef0fc1d613fea243074684d/chat/src/infra/langchain/tools.py#L36)
 또한 Room에 저장된 모든 Book들의 Vectorstore들을 동적으로 가져와 Tool로 변경하도록 하였습니다.
 
 사용된 Tool들을 정리하면 다음과 같습니다.
@@ -118,9 +121,10 @@ Langchain
 - `services/`: 여러 infra, model 접근이 필요한 코드
 - `infra/`: 외부 의존성 강한 코드들
 
+- [volume](https://github.com/minkj1992/Alexandria/blob/81357e1cd9a410cc7ef0fc1d613fea243074684d/docker-compose.yml#L19)
 
-@link prepare(), docker compose mount
 * huggingface 모델을 `from_pretrained()` 사용하기 위해, chat/models에 저장해 두었고, 이는 mount 되어있습니다.
+
 
 ```
 .
@@ -323,7 +327,7 @@ $ make test-load
 5. http://localhost:8089/ 이동, 3종류 user class 선택하여 테스트
 
 
-@link locustfile
+- [locust/](https://github.com/minkj1992/Alexandria/tree/main/chat/tests/locust)
 
 
 <center>
