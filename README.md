@@ -24,7 +24,7 @@
     - [x] Load balancer, `Nginx`
     - [x] REST 서버 및 WS 서버, `fastapi`
     - [x] CI, Makefile
-    - [ ] Pre-commit
+    - ~~[ ] Pre-commit~~
 - LLM
     - [x] Prompt 기반, `Langchain`
     - [x] Model 기반, `Huggingface`
@@ -33,7 +33,7 @@
 - API
     - [x] /chat 엔드포인트
     - [x] /chat memory
-    ~~- [ ] RLHF pipeline~~
+    - ~~[ ] RLHF pipeline~~
     - [x] Swagger
     - [x] Database, `redis`
 - Test
