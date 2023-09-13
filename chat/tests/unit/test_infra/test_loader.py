@@ -1,15 +1,11 @@
 import httpx
 import pytest
 from langchain.docstore.document import Document
-
-from src.infra.langchain.loader import (
-    AsyncRecursiveUrlLoader,
-    get_docs_from_urls,
-    load_url,
-)
+from src.infra.langchain.loader import (AsyncRecursiveUrlLoader,
+                                        get_docs_from_urls, load_url)
 
 pytestmark = pytest.mark.asyncio
-
+MAX_DEPTH = 8
 
 def mock_get(*args, **kwargs):
     url = args[1]
@@ -134,7 +130,7 @@ async def test_load_url_with_depth():
         ]
     )
 
-    result = await load_url("http://test.com/depth1")
+    result = await load_url("http://test.com/depth1", MAX_DEPTH)
 
     assert len(result) == 4  # depth1, depth2a, depth2b, depth3a
 
@@ -183,7 +179,7 @@ async def test_get_docs_from_urls_multiple():
         ),
     ]
     result = await get_docs_from_urls(
-        ["http://test.com/valid", "http://test.com/depth1"]
+        ["http://test.com/valid", "http://test.com/depth1"], MAX_DEPTH
     )
 
     assert len(result) == 5  # valid, depth1, depth2a, depth2b, depth3a
@@ -195,7 +191,7 @@ async def test_get_docs_from_urls_multiple():
 # Test for load_url function with deeper depth
 @pytest.mark.asyncio
 async def test_load_url_deeper_depth():
-    result = await load_url("http://test.com/depth1/depth2a")
+    result = await load_url("http://test.com/depth1/depth2a", MAX_DEPTH)
 
     assert len(result) == 2  # depth2a, depth3a
     assert "Specific content for depth 2a" in result[0].page_content

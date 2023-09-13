@@ -126,11 +126,11 @@ class AsyncRecursiveUrlLoader(RecursiveUrlLoader):
         ]
 
 
-async def load_url(url: str) -> List[Document]:
+async def load_url(url: str, max_depth: int) -> List[Document]:
     logger.info(f"Crawl url {url}")
     loader = AsyncRecursiveUrlLoader(
         url=url,
-        max_depth=3,
+        max_depth=max_depth,
         extractor=lambda x: BeautifulSoup(x, "lxml").text,
         prevent_outside=True,
     )
@@ -138,9 +138,9 @@ async def load_url(url: str) -> List[Document]:
     return [doc for i, doc in enumerate(temp_docs) if doc not in temp_docs[:i]]
 
 
-async def get_docs_from_urls(urls: List[str]) -> List[Document]:
+async def get_docs_from_urls(urls: List[str], max_depth: int) -> List[Document]:
     # Use asyncio.gather to load all URLs concurrently
-    documents = await asyncio.gather(*(load_url(url) for url in urls))
+    documents = await asyncio.gather(*(load_url(url, max_depth) for url in urls))
     documents = [doc for sublist in documents for doc in sublist]  # Flatten the list
 
     html2text = Html2TextTransformer()

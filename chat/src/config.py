@@ -3,7 +3,8 @@ from functools import lru_cache
 
 from pydantic import BaseSettings as S
 
-_PHASE = os.getenv('PHASE').lower()
+_PHASE = os.getenv("PHASE").lower()
+
 
 class BaseSettings(S):
     openai_api_key: str
@@ -26,8 +27,9 @@ class TestSettings(BaseSettings):
     class Config:
         env_file = ".env.test"
 
+
 @lru_cache()
 def get_settings() -> BaseSettings:
-    if _PHASE == 'test':
+    if _PHASE == "test":
         return TestSettings()
     return ProdSettings()

@@ -5,7 +5,6 @@ import pytest
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import AsyncClient
-
 from src.config import get_settings
 from src.infra.redis.connection import connect_to_redis
 from src.infra.redis.models import MODELS

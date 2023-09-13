@@ -18,8 +18,8 @@ async def create_a_book(name: str, description: str) -> str:
     return book.pk
 
 
-async def create_a_book_chain(book_pk: str, urls: List[str]):
-    docs = await get_docs_from_urls(urls)
+async def create_a_book_chain(book_pk: str, urls: List[str], max_depth: int):
+    docs = await get_docs_from_urls(urls, max_depth)
     return await vectorstore.from_docs(docs, index_name=book_pk)
 
 

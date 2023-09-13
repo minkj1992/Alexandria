@@ -1,8 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, Field
-
 from src.domain.prompts import BASE_SYS_PROMPT
 from src.services import room_service
 
@@ -10,13 +9,15 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 
 class CreateRoomRequest(BaseModel):
-    name: str = Field(title="Room name")
+    name: str = Field(title="Room name", description="채팅방에 랜더링됩닏.")
 
-    books: List[str] = Field(title="Room에 포함시킬 book pk 리스트")
+    books: List[str] = Field(title="Room에 포함시킬 book pk 리스트", description="추가하는 만큼 채팅방의 vectorstore로 포함됩니다.")
 
-    prompt: str = Field(
+    prompt: Optional[str] = Field(
         default=BASE_SYS_PROMPT,
-        title="Room Prompt",
+        title="채팅방에서 사용할 Prompt",
+        description="OpenAiFunctionAgent에서 사용할 system prompt입니다.",
+        nullable=True,
     )
 
 

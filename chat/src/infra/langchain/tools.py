@@ -1,15 +1,16 @@
 import asyncio
 from typing import Any, List
 
-from langchain.agents import AgentExecutor, Tool, load_huggingface_tool, load_tools
+from fastapi.concurrency import run_in_threadpool
+from langchain.agents import (AgentExecutor, Tool, load_huggingface_tool,
+                              load_tools)
 from langchain.tools import BaseTool
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStore
 from loguru import logger
-
-from infra.huggingface.loader import load_bart_pipe, load_t5_small_pipe
 from src.config import get_settings
 from src.domain.models import RoomDto
+from src.infra.huggingface.loader import bart_pipe, t5_pipe
 from src.services.book_service import get_a_book_vector
 
 serper_api_key = get_settings().serper_api_key
@@ -60,7 +61,7 @@ class TranslationTool(BaseTool):
     description = "useful for changing English sentences into French."
     verbose = True
 
-    pipe = load_t5_small_pipe()
+    pipe = t5_pipe
     fallback_msg = "rien n'a été renvoyé"
 
     def _run(self, en_text: str) -> str:
@@ -73,9 +74,7 @@ class TranslationTool(BaseTool):
         return translation_text
 
     async def _arun(self, en_text: str) -> list:
-        loop = asyncio.get_event_loop()
-        translation = await loop.run_in_executor(None, self._run, en_text)
-        return translation
+        return await run_in_threadpool(func=self._run, en_text=en_text)
 
 
 class SummarizationTool(BaseTool):
@@ -84,7 +83,7 @@ class SummarizationTool(BaseTool):
     verbose = True
 
     fallback_msg = "Cannot summarize."
-    pipe = load_bart_pipe()
+    pipe = bart_pipe
 
     def _run(self, text: str) -> str:
         result = self.pipe(text)
@@ -95,6 +94,4 @@ class SummarizationTool(BaseTool):
             return self.fallback_msg
 
     async def _arun(self, text: str) -> list:
-        loop = asyncio.get_event_loop()
-        summarized = await loop.run_in_executor(None, self._run, text)
-        return summarized
+        return await run_in_threadpool(func=self._run, text=text)

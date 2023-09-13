@@ -31,7 +31,15 @@ pytest = "^7.4.2"
 asgi-lifespan = "^2.1.0"
 pytest-mock = "^3.11.1"
 locust = "^2.16.1"
+websocket-client = "^1.6.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
