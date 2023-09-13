@@ -8,6 +8,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
 def load_t5_small_pipe():
     model_path = "/models/t5-small"
+    logger.info(f"loading... {model_path}")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
     return pipeline("translation_en_to_fr", model=model, tokenizer=tokenizer)
@@ -15,6 +16,7 @@ def load_t5_small_pipe():
 
 def load_bart_pipe():
     model_path = "/models/bart-large-cnn"
+    logger.info(f"loading... {model_path}")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
     return pipeline("summarization", model=model, tokenizer=tokenizer)

@@ -1,5 +1,5 @@
 __pycache__/
-.env
+.env*
 .pytest_cache/
 
 chat/models/*

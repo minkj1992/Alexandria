@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/app.conf:/etc/nginx/conf.d/app.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - test-net      
+  
+  chat1:
+    container_name: chat1
+    restart: on-failure
+    build:
+      context: ./chat
+      dockerfile: Dockerfile
+    command: uvicorn src.main:app --host=0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      - PHASE=test
+    env_file:
+      - ./chat/.env.test  
+    volumes:
+      - ./chat/src:/src/
+      - ./chat/models:/models/
+    depends_on:
+      - redis
+    networks:
+      - test-net          
+  chat2:
+    container_name: chat2
+    restart: on-failure
+    build:
+      context: ./chat
+      dockerfile: Dockerfile
+    command: uvicorn src.main:app --host=0.0.0.0 --port 8000 --reload
+    ports:
+      - "8001:8000"
+    environment:
+      - PHASE=test
+    env_file:
+      - ./chat/.env.test  
+    volumes:
+      - ./chat/src:/src/
+      - ./chat/models:/models/
+    depends_on:
+      - redis
+    networks:
+      - test-net  
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    restart: always
+    ports:
+      - "6379:6379"
+      - "6380:8001"
+    volumes:
+      - redis-data:/data
+    environment:
+      REDIS_ARGS: "--save 60 1000 --appendonly no"
+    networks:
+      - test-net
+
+  master:
+    image: locustio/locust:latest
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./chat/tests/locust/:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://master:8089
+    depends_on:
+      - chat
+  worker:
+    image: locustio/locust:latest
+    deploy:
+      replicas: 1
+    volumes:
+      - ./chat/tests/locust/:/mnt/locust
+    environment:
+      - APP_URL=http://0.0.0.0:8000
+    command: -f /mnt/locust/locustfile.py --worker --master-host master  
+    depends_on:
+      - master
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  test-net:
+    driver: bridge

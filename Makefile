@@ -5,8 +5,13 @@ up:
 down: 
 	@docker compose down
 
-.PHONY: test
-test: up test-chat
-
-test-chat:
+test-unit: up
 	cd chat && make test
+
+test-load:
+	@docker compose --file docker-compose.test.yml up --build -d --remove-orphans
+	@docker compose --file docker-compose.test.yml logs -f
+	
+test-down:
+	@docker compose --file docker-compose.test.yml down
+	

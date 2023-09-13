@@ -1,12 +1,11 @@
 import redis.asyncio as redis
 from fastapi import FastAPI, Request
 from loguru import logger
-
-from src.config import Settings, get_settings
+from src.config import BaseSettings, get_settings
 from src.infra.redis.models import MODELS
 
 
-async def connect_to_redis(app: FastAPI, settings: Settings) -> None:
+async def connect_to_redis(app: FastAPI, settings: BaseSettings) -> None:
     logger.info(f"Connecting to Redis-stack")
     pool = redis.ConnectionPool(
         host=settings.redis_host,
