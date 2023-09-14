@@ -342,3 +342,10 @@ $ make test-load
 ```sh
 $ make test-down
 ```
+## Improvement
+
+- Auto RLHF system
+  - Background Sentiment analysis by NLP model, 유저의 채팅 답변을 기반으로 자동으로 scoring
+  - Send feedback api, UI상에서 유저의 input을 받아 scoring
+  - 라벨링된 데이터들을 사용해 agent 학습
+- Huggingface model Autoscaling (Bottle neck happened)
